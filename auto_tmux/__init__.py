@@ -17,7 +17,7 @@ import libtmux
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 from os.path import expanduser, isfile
-from logging import info, error, critical, debug, basicConfig, INFO, DEBUG, getLogger
+from logging import info, critical, INFO, getLogger, basicConfig
 
 
 class StringWrapper(str):
@@ -25,19 +25,19 @@ class StringWrapper(str):
         super().__init__()
         self.str = s
 
-    def format(self, *args, **kwargs):        
+    def format(self, *args, **kwargs):
         """over rides the default string format method to put squarbrackets around "levlename" before appllying padding"""
-        if kwargs.get("levelname"):    
+        if kwargs.get("levelname"):
             kwargs["levelname"] = f"[{kwargs['levelname']}]:"
             kwargs["levelname"] = "{0:11} | ".format(kwargs["levelname"])
-       
+
         pos_args = args if len(args) == 3 else [None, None, None]
         res = self.str.format(*pos_args, **kwargs)
-        
+
         if "\n" in res:
             header = ' ' * 12 + "| "
             res = "\n".join(line if not i else f"{header}{line}" for i, line in enumerate(res.split("\n")))
-        
+
         return res
 
 
@@ -52,24 +52,25 @@ layout_dir = expanduser("~/.config/auto-tmux/layouts/")
 
 def is_full_path(f_name):
     """
-    used to check if `f_name` is all ready a usable path. 
+    used to check if `f_name` is all ready a usable path.
     usable paths include full paths or files in the current directory.
     """
     from os import listdir
     from os.path import isfile
-    
+
     # files in currnet directory
-    cur_dir_files = [f for f in listdir('.') if isfile(f) and (f.endswith(".yaml") or f.endswith(".yml"))] 
+    cur_dir_files = [f for f in listdir('.') if isfile(f) and (f.endswith(".yaml") or f.endswith(".yml"))]
 
     return "/" in f_name or f_name in cur_dir_files
+
 
 def is_know_layout(f_name):
     """checks if the file name is in the layout_dir directory, returns the layout name if is exists."""
     from os import listdir
     from os.path import isfile
-    
+
     # files in currnet directory
-    known_layouts = [f for f in listdir(layout_dir) if isfile(layout_dir + f) and (f.endswith(".yaml") or f.endswith(".yml"))]  
+    known_layouts = [f for f in listdir(layout_dir) if isfile(layout_dir + f) and (f.endswith(".yaml") or f.endswith(".yml"))]
     selected_names = {f_name, f_name + ".yaml", f_name + ".yml"}
 
     for layout in known_layouts:
@@ -129,6 +130,7 @@ async def setup_pane(pane_conf, tmux_window):
 
     return 0
 
+
 async def setup_window(window, tmux_session):
     """sets up a tmux window in tmux_session"""
     tmux_window = tmux_session.new_window(
@@ -137,37 +139,37 @@ async def setup_window(window, tmux_session):
         start_directory=window.get("dir"),
         # pane_start_command=window.get("cmd")
     )
-    
+
     if window.get("cmd"):
         await run_cmd(tmux_window.panes[0], window.get("cmd"))
 
     ec = 0
 
     if window.get("panes"):
-        ec += sum(await asyncio.gather(*[ setup_pane(pane_conf, tmux_window) for pane_conf in window.get("panes") ])) 
+        ec += sum(await asyncio.gather(*[setup_pane(pane_conf, tmux_window) for pane_conf in window.get("panes")]))
 
     return ec
 
-    
+
 async def setup_session(session, server) -> (str, bool):
     """sets up a list of sessions"""
     session_name = session.get("name")
-    
+
     try:
         server.sessions.get(session_name=session_name)
     except libtmux._internal.query_list.ObjectDoesNotExist:
         pass
     else:
-        LOG.error(f"a session named {session_name} already exists. reconfiguring existing" "\n" 
-                   "sessions is not yet implemented but, is planned for the future.")
+        LOG.error(f"a session named {session_name} already exists. reconfiguring existing" "\n"
+                  "sessions is not yet implemented but, is planned for the future.")
         return 1
 
     tmux_session = server.new_session(session_name)
     # tmux_session = server.sessions.get(session_name=session.get("name"))
-    
-    n_errors = sum(await asyncio.gather(*[ setup_window(window, tmux_session) for window in session.get("windows") ]))
+
+    n_errors = sum(await asyncio.gather(*[setup_window(window, tmux_session) for window in session.get("windows")]))
     tmux_session.windows[0].kill_window()
-    
+
     if n_errors != 0:
         LOG.error(f"encountered {n_errors} while setting up session named: {session_name}.")
 
@@ -185,15 +187,16 @@ async def load_layout(layout_path, progress_bar=False):
     # if progress_bar:
     #     n_errors = sum([setup_session(session, tqdm.write) for session in tqdm(layout)])
     # else:
-    #     n_errors = sum([setup_session(session, print) for session in layout]) 
-    n_errors = sum(await asyncio.gather(*[ setup_session(session, server) for session in iter ]))
+    #     n_errors = sum([setup_session(session, print) for session in layout])
+    n_errors = sum(await asyncio.gather(*[setup_session(session, server) for session in iter]))
 
     if n_errors != 0:
         LOG.error(f"encountered {n_errors} errors while seting up the \"{layout_path}\" layout.")
-    
+
     LOG.info(f"layout config from \"{layout_path}\" has been loaded.")
 
     return layout
+
 
 def _get_cmd_args():
     """uses argparse to get command line arguments"""
@@ -233,7 +236,8 @@ def _get_cmd_args():
         "-d",
         dest="no_connect",
         action='store_true',
-        help="dont autoconnect. (by default the current terminal will be autoconnected to either the session specified by the '--target' flag or tmux's best guess)",
+        help="dont autoconnect. (by default the current terminal will be autoconnected to either the session specified "
+             "by the '--target' flag or tmux's best guess)",
     )
 
     return parser.parse_args()
@@ -248,20 +252,20 @@ async def _run_cli():
         layout_path = get_full_path(args.session)
         # LOG.debug(f"path to layout file: {layout_path}")
         layout = await load_layout(layout_path, not args.quiet)
-        
+
         if not args.no_connect:
             from os import system
             session = None
-            
-            if type(args.target) != bool:
+
+            if type(args.target) is bool:
                 session = args.target
-            elif len(layout) == 1 and layout[0].get("name"): 
+            elif len(layout) == 1 and layout[0].get("name"):
                 session = layout[0].get("name")
             elif len(layout) == 1 and not layout[0].get("name"):
                 session = ""
             else:
-                LOG.info(f"the '--traget' flag was not passed a value and there is more then one session in" "\n" 
-                          "the layout in the config, letting tmux guess.")
+                LOG.info("the '--traget' flag was not passed a value and there is more then one session in" "\n"
+                         "the layout in the config, letting tmux guess.")
                 session = ""
 
             LOG.info(f"attaching to session: \"{session if session else 'TMUX BEST GUESS'}\"")
