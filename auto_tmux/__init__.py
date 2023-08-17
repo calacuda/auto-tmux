@@ -114,7 +114,7 @@ async def setup_pane(pane_conf, tmux_window):
     valid_directions = ["hori", "vert", "vertical", "horizontal"]
 
     if not pane_conf.get("direction").lower() in valid_directions:
-        # window_name = tmux_window.get('name') if tmux_window.get('name') else "undefined-name"
+        window_name = tmux_window.get('name') if tmux_window.get('name') else "undefined-name"
         LOG.error(f"confing value for key 'direction' is invalid; must be one of {valid_directions}." "\n"
                   f"could not set up the pane with config: {pane_conf}, in window: {window_name}")
         return 1
