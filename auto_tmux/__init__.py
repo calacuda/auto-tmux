@@ -176,19 +176,19 @@ async def setup_session(session, server) -> (str, bool):
     return n_errors
 
 
-async def setup_layout(layout, progress_bar=False):
+async def setup_layout(server, layout, progress_bar=False):
     """sets up the tmux server to have new sessions defined by layout"""
-    server = libtmux.Server()
+    # server = libtmux.Server()
     iter = tqdm(layout) if progress_bar else layout
     n_errors = sum(await asyncio.gather(*[setup_session(session, server) for session in iter]))
 
     return n_errors
 
 
-async def load_layout(layout_path, progress_bar=False):
+async def load_layout(server, layout_path, progress_bar=False):
     """loads the layout defined by the file located at layout_path"""
     layout = parse_layout(layout_path)
-    n_errors = await setup_layout(layout, progress_bar)
+    n_errors = await setup_layout(server, layout, progress_bar)
 
     if n_errors != 0:
         LOG.error(f"encountered {n_errors} errors while seting up the \"{layout_path}\" layout.")
@@ -254,7 +254,8 @@ async def _run_cli():
         layout_path = get_full_path(args.session)
         # LOG.debug(f"path to layout file: {layout_path}")
         info(f"loading layout config from \"{layout_path}\"...")
-        layout = await load_layout(layout_path, progress_bar=not args.quiet)
+        server = libtmux.Server()
+        layout = await load_layout(server, layout_path, progress_bar=not args.quiet)
 
         if not args.no_connect:
             # from os import system
@@ -269,12 +270,12 @@ async def _run_cli():
                 session = layout[0].get("name")
 
             if not session:
-                LOG.critical("could not determin what session to connect to. try again using either the '-t'/--target' or '-d' flag.")
+                LOG.critical("could not determin what session to connect to. try again using either the" "\n"
+                             "'-t'/--target' or '-d' flag.")
                 exit(1)
 
             LOG.info(f"attaching to session: \"{session}\"")
             # system(f"tmux attach {'-t ' + session if session else ''}")
-            server = libtmux.Server()
             server.sessions.get(session_name=session).attach_session()
 
 
