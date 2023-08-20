@@ -176,19 +176,19 @@ async def setup_session(session, server) -> (str, bool):
     return n_errors
 
 
-async def load_layout(layout_path, progress_bar=False):
-    """loads the layout located at `layout_path`"""
-    info(f"loading layout config from \"{layout_path}\"...")
-    layout = parse_layout(layout_path)
+async def setup_layout(layout, progress_bar=False):
+    """sets up the tmux server to have new sessions defined by layout"""
     server = libtmux.Server()
-    # echo = tqdm.write if progress_bar else print
     iter = tqdm(layout) if progress_bar else layout
-
-    # if progress_bar:
-    #     n_errors = sum([setup_session(session, tqdm.write) for session in tqdm(layout)])
-    # else:
-    #     n_errors = sum([setup_session(session, print) for session in layout])
     n_errors = sum(await asyncio.gather(*[setup_session(session, server) for session in iter]))
+    
+    return n_errors
+
+
+async def load_layout(layout_path, progress_bar=False):
+    """loads the layout defined by the file located at layout_path"""
+    layout = parse_layout(layout_path)
+    n_errors = await setup_layout(layout, progress_bar)
 
     if n_errors != 0:
         LOG.error(f"encountered {n_errors} errors while seting up the \"{layout_path}\" layout.")
@@ -225,8 +225,10 @@ def _get_cmd_args():
         "-t",
         "--target",
         dest='target',
-        const=False,
-        default=True,
+        # const=False,
+        # default=True,
+        const="",
+        default="",
         action='store',
         nargs='?',
         type=str,
@@ -236,6 +238,7 @@ def _get_cmd_args():
         "-d",
         dest="no_connect",
         action='store_true',
+        default=False,
         help="dont autoconnect. (by default the current terminal will be autoconnected to either the session specified "
              "by the '--target' flag or tmux's best guess)",
     )
@@ -247,27 +250,27 @@ async def _run_cli():
     """main function that runs the cli"""
     with logging_redirect_tqdm():
         args = _get_cmd_args()
+        print(f"{args=}")
+        # return
         LOG.debug(f"args: {args}")
 
         layout_path = get_full_path(args.session)
         # LOG.debug(f"path to layout file: {layout_path}")
-        layout = await load_layout(layout_path, not args.quiet)
+        info(f"loading layout config from \"{layout_path}\"...")
+        layout = await load_layout(layout_path, progress_bar=not args.quiet)
+        
 
         if not args.no_connect:
             from os import system
-            session = None
+            session = args.target
 
-            if type(args.target) is bool:
-                session = args.target
-            elif len(layout) == 1 and layout[0].get("name"):
+            if not session and len(layout) == 1 and layout[0].get("name"):
                 session = layout[0].get("name")
-            elif len(layout) == 1 and not layout[0].get("name"):
-                session = ""
-            else:
-                LOG.info("the '--traget' flag was not passed a value and there is more then one session in" "\n"
-                         "the layout in the config, letting tmux guess.")
-                session = ""
-
+            elif not session and len(layout) > 1:
+                LOG.info("the '--traget' flag was not passed a value and can not infer target session in this" "\n"
+                         "context, letting tmux guess.")
+                session = " "  # this needs to be a space so the below tmux attach command will result in "-t"
+            
             LOG.info(f"attaching to session: \"{session if session else 'TMUX BEST GUESS'}\"")
             system(f"tmux attach {'-t ' + session if session else ''}")
 
