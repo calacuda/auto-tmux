@@ -250,28 +250,32 @@ async def _run_cli():
     """main function that runs the cli"""
     with logging_redirect_tqdm():
         args = _get_cmd_args()
-        print(f"{args=}")
-        # return
-        LOG.debug(f"args: {args}")
-
+        # LOG.debug(f"args: {args}")
         layout_path = get_full_path(args.session)
         # LOG.debug(f"path to layout file: {layout_path}")
         info(f"loading layout config from \"{layout_path}\"...")
         layout = await load_layout(layout_path, progress_bar=not args.quiet)
 
         if not args.no_connect:
-            from os import system
+            # from os import system
             session = args.target
 
-            if not session and len(layout) == 1 and layout[0].get("name"):
+            if not session and len(layout) == 1:
                 session = layout[0].get("name")
             elif not session and len(layout) > 1:
                 LOG.info("the '--traget' flag was not passed a value and can not infer target session in this" "\n"
-                         "context, letting tmux guess.")
-                session = " "  # this needs to be a space so the below tmux attach command will result in "-t"
+                         "context, connecting to first session in config.")
+                # session = " "  # this needs to be a space so the below tmux attach command will result in "-t"
+                session = layout[0].get("name")
 
-            LOG.info(f"attaching to session: \"{session if session else 'TMUX BEST GUESS'}\"")
-            system(f"tmux attach {'-t ' + session if session else ''}")
+            if not session:
+                LOG.critical("could not determin what session to connect to. try again using either the '-t'/--target' or '-d' flag.")
+                exit(1)
+
+            LOG.info(f"attaching to session: \"{session}\"")
+            # system(f"tmux attach {'-t ' + session if session else ''}")
+            server = libtmux.Server()
+            server.sessions.get(session_name=session).attach_session()
 
 
 def run_cli():
