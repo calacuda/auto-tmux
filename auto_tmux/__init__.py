@@ -181,7 +181,7 @@ async def setup_layout(layout, progress_bar=False):
     server = libtmux.Server()
     iter = tqdm(layout) if progress_bar else layout
     n_errors = sum(await asyncio.gather(*[setup_session(session, server) for session in iter]))
-    
+
     return n_errors
 
 
@@ -258,7 +258,6 @@ async def _run_cli():
         # LOG.debug(f"path to layout file: {layout_path}")
         info(f"loading layout config from \"{layout_path}\"...")
         layout = await load_layout(layout_path, progress_bar=not args.quiet)
-        
 
         if not args.no_connect:
             from os import system
@@ -270,7 +269,7 @@ async def _run_cli():
                 LOG.info("the '--traget' flag was not passed a value and can not infer target session in this" "\n"
                          "context, letting tmux guess.")
                 session = " "  # this needs to be a space so the below tmux attach command will result in "-t"
-            
+
             LOG.info(f"attaching to session: \"{session if session else 'TMUX BEST GUESS'}\"")
             system(f"tmux attach {'-t ' + session if session else ''}")
 
