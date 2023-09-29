@@ -80,7 +80,7 @@ def is_know_layout(f_name):
     return ""
 
 
-def _get_full_path(f_name):
+def try_get_full_path(f_name):
     path = layout_dir
     known_layout = is_know_layout(f_name)
 
