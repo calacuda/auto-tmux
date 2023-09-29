@@ -80,8 +80,7 @@ def is_know_layout(f_name):
     return ""
 
 
-def get_full_path(f_name):
-    """returns the full file path"""
+def _get_full_path(f_name):
     path = layout_dir
     known_layout = is_know_layout(f_name)
 
@@ -91,6 +90,13 @@ def get_full_path(f_name):
         path += f_name
     else:
         path = f_name
+
+    return path
+
+
+def get_full_path(f_name):
+    """returns the full file path"""
+    path = _get_full_path(f_name)
 
     if isfile(path):
         return path
