@@ -9,6 +9,8 @@ build-backend = "setuptools.build_meta"
 name = "auto-tmux"
 version = "0.2.1"
 requires-python = ">=3.9"
+readme = "README.md"
+license = {file = "LICENSE"}
 # author = "Calacuda"
 description = "yet another tmux automation script that takes yaml"
 classifiers = [
