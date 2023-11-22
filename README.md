@@ -4,5 +4,6 @@ a tool to automate tmux session configurations. this tool is similar to [tmuxina
 
 ## TODO
 
-- [ ] consider making publishing to PYPI
-  - [ ] if doing so, add automation to github acitons
+- [x] Publish to PYPI
+  - [x] Add automation to github acitons
+- [ ] add variable to yaml config files (see [todo file](./TODO.md) for more)

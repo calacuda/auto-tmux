@@ -27,3 +27,6 @@ dependencies = [
     "pyaml",
     "libtmux"
 ]
+
+[project.scripts]
+auto-tmux = "auto_tmux:run_cli"
