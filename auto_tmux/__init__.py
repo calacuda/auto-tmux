@@ -37,7 +37,8 @@ class StringWrapper(str):
 
         if "\n" in res:
             header = ' ' * 12 + "| "
-            res = "\n".join(line if not i else f"{header}{line}" for i, line in enumerate(res.split("\n")))
+            res = "\n".join(line if not i else f"{header}{
+                            line}" for i, line in enumerate(res.split("\n")))
 
         return res
 
@@ -60,7 +61,8 @@ def is_full_path(f_name):
     from os.path import isfile
 
     # files in currnet directory
-    cur_dir_files = [f for f in listdir('.') if isfile(f) and (f.endswith(".yaml") or f.endswith(".yml"))]
+    cur_dir_files = [f for f in listdir('.') if isfile(
+        f) and (f.endswith(".yaml") or f.endswith(".yml"))]
 
     return "/" in f_name or f_name in cur_dir_files
 
@@ -71,7 +73,8 @@ def is_know_layout(f_name):
     from os.path import isfile
 
     # files in currnet directory
-    known_layouts = [f for f in listdir(layout_dir) if isfile(layout_dir + f) and (f.endswith(".yaml") or f.endswith(".yml"))]
+    known_layouts = [f for f in listdir(layout_dir) if isfile(
+        layout_dir + f) and (f.endswith(".yaml") or f.endswith(".yml"))]
     selected_names = {f_name, f_name + ".yaml", f_name + ".yml"}
 
     for layout in known_layouts:
@@ -102,7 +105,8 @@ def get_full_path(f_name):
     if isfile(path):
         return path
     else:
-        critical(f"the suplied file_name: \"{f_name}\", assumed to be located at: \"{path}\", does not exists.")
+        critical(f"the suplied file_name: \"{
+                 f_name}\", assumed to be located at: \"{path}\", does not exists.")
         exit(1)
 
 
@@ -121,15 +125,19 @@ async def run_cmd(thing, cmd):
 async def setup_pane(pane_conf, tmux_window):
     valid_directions = ["hori", "vert", "vertical", "horizontal"]
 
-    if not pane_conf.get("direction").lower() in valid_directions:
-        window_name = tmux_window.get('name') if tmux_window.get('name') else "undefined-name"
+    if pane_conf.get("direction") and not pane_conf.get("direction").lower() in valid_directions:
+        window_name = tmux_window.get('name') if tmux_window.get(
+            'name') else "undefined-name"
         LOG.error(f"confing value for key 'direction' is invalid; must be one of {valid_directions}." "\n"
                   f"could not set up the pane with config: {pane_conf}, in window: {window_name}")
         return 1
 
+    if not pane_conf.get("direction"):
+        return 0
+
     tmux_pane = tmux_window.split_window(
         vertical=pane_conf.get("direction").lower().startswith("v"),
-        # shell=pane_conf.get("cmd"),
+        shell=pane_conf.get("cmd"),
         percent=pane_conf.get("percent")
     )
 
@@ -178,7 +186,8 @@ async def setup_session(session, server) -> (str, bool):
     tmux_session.windows[0].kill_window()
 
     if n_errors != 0:
-        LOG.error(f"encountered {n_errors} while setting up session named: {session_name}.")
+        LOG.error(f"encountered {n_errors} while setting up session named: {
+                  session_name}.")
 
     return n_errors
 
@@ -198,7 +207,8 @@ async def load_layout(server, layout_path, progress_bar=False):
     n_errors = await setup_layout(server, layout, progress_bar)
 
     if n_errors != 0:
-        LOG.error(f"encountered {n_errors} errors while seting up the \"{layout_path}\" layout.")
+        LOG.error(f"encountered {n_errors} errors while seting up the \"{
+                  layout_path}\" layout.")
 
     LOG.info(f"layout config from \"{layout_path}\" has been loaded.")
 
