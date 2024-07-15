@@ -27,18 +27,15 @@ dependencies = [
     "pyaml",
     "libtmux",
 ]
-readme = "README.md"
-# long_description_content_type = text/markdown
-# url = "https://github.com/calacuda/auto-tmux"
-# author = "Calacuda"
-license = {file = "LICENSE"}
+# readme = "README.md"
+# license = {file = "LICENSE"}
 authors = [
     {name = "Calacuda"}
 ]
 maintainers = [
     {name = "Calacuda"}
 ]
-requires-python = ">=3.11"
+# requires-python = ">=3.11"
 
 [project.urls]
 Repository = "https://github.com/calacuda/auto-tmux"
