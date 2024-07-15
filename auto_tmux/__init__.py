@@ -37,8 +37,8 @@ class StringWrapper(str):
 
         if "\n" in res:
             header = ' ' * 12 + "| "
-            res = "\n".join(line if not i else f"{header}{
-                            line}" for i, line in enumerate(res.split("\n")))
+            res = "\n".join(line if not i else
+                            f"{header}{line}" for i, line in enumerate(res.split("\n")))
 
         return res
 
