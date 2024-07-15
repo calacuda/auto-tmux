@@ -1,7 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=54",
-    "wheel"
+    "setuptools>=61.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -15,4 +14,28 @@ classifiers = [
     "License :: OSI Approved :: MIT License",  
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     ]
+dependencies = [
+    "tqdm",
+    "pyaml",
+    "libtmux",
+]
+readme = "README.md"
+# long_description_content_type = text/markdown
+# url = "https://github.com/calacuda/auto-tmux"
+# author = "Calacuda"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Calacuda"}
+]
+maintainers = [
+    {name = "Calacuda"}
+]
+requires-python = ">=3.11"
+
+[project.urls]
+Repository = "https://github.com/calacuda/auto-tmux"
+
+[project.scripts]
+auto-tmux = "auto_tmux:run_cli"

@@ -18,6 +18,7 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 from os.path import expanduser, isfile
 from logging import info, critical, INFO, getLogger, basicConfig
+from os import getcwd
 
 
 class StringWrapper(str):
@@ -142,7 +143,7 @@ async def setup_window(window, tmux_session):
     tmux_window = tmux_session.new_window(
         attach=False,
         window_name=window.get("name"),
-        start_directory=window.get("dir"),
+        start_directory=window.get("dir") if window.get("dir") else getcwd(),
         # pane_start_command=window.get("cmd")
     )
 
