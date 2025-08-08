@@ -1,4 +1,4 @@
-default:
+_:
   @just --list
 
 install:
