@@ -183,7 +183,7 @@ async def setup_session(session, server) -> (str, bool):
     # tmux_session = server.sessions.get(session_name=session.get("name"))
 
     n_errors = sum(await asyncio.gather(*[setup_window(window, tmux_session) for window in session.get("windows")]))
-    tmux_session.windows[0].kill_window()
+    tmux_session.windows[0].kill()
 
     if n_errors != 0:
         LOG.error(f"encountered {n_errors} while setting up session named: {
